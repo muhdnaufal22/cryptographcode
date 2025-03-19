@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Encrypt/Decrypt Application</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* General Styles */
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #1e1e2f;
+            color: #ffffff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            background-color: #2a2a40;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            width: 400px;
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 24px;
+            font-weight: 600;
+            color: #00ff88;
+        }
+
+        textarea, input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border-radius: 8px;
+            border: none;
+            font-size: 14px;
+            background-color: #3a3a52;
+            color: #ffffff;
+            transition: all 0.3s ease;
+            box-sizing: border-box; /* Ensure consistent sizing */
+        }
+
+        textarea::placeholder, input::placeholder {
+            color: #a0a0a0;
+        }
+
+        textarea:focus, input:focus, select:focus, button:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0, 255, 136, 0.3);
+        }
+
+        button {
+            background-color: #00ff88;
+            color: #1e1e2f;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #00cc66;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 15px;
+            background-color: #3a3a52;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #ffffff;
+            animation: slideIn 0.5s ease-in-out;
+        }
+
+        .result strong {
+            color: #00ff88;
+        }
+
+        /* Hide the key input by default */
+        #keyInputContainer {
+            display: none;
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Encrypt/Decrypt Application</h1>
+        <textarea id="inputMessage" placeholder="Enter your message here..."></textarea>
+        <select id="encryptionType">
+            <option value="substitution">Substitution Cipher</option>
+            <option value="caesar">Caesar Cipher</option>
+            <option value="vigenere">Vigenère Cipher</option>
+        </select>
+        <div id="keyInputContainer">
+            <input type="text" id="keyInput" placeholder="Enter key for Vigenère Cipher">
+        </div>
+        <button onclick="encryptMessage()">Encrypt</button>
+        <button onclick="decryptMessage()">Decrypt</button>
+        <div class="result">
+            <strong>Result:</strong>
+            <p id="resultText"></p>
+        </div>
+    </div>
+
+    <script>
+        // Show/hide the key input field based on the selected encryption type
+        const encryptionType = document.getElementById("encryptionType");
+        const keyInputContainer = document.getElementById("keyInputContainer");
+
+        encryptionType.addEventListener("change", () => {
+            if (encryptionType.value === "vigenere") {
+                keyInputContainer.style.display = "block";
+            } else {
+                keyInputContainer.style.display = "none";
+            }
+        });
+
+        async function encryptMessage() {
+            const message = document.getElementById("inputMessage").value;
+            const encryptionType = document.getElementById("encryptionType").value;
+            const key = document.getElementById("keyInput").value;
+            const response = await fetch("/encrypt", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ message, type: encryptionType, key }),
+            });
+            const data = await response.json();
+            document.getElementById("resultText").innerText = data.cipher_text || data.error;
+        }
+
+        async function decryptMessage() {
+            const message = document.getElementById("inputMessage").value;
+            const encryptionType = document.getElementById("encryptionType").value;
+            const key = document.getElementById("keyInput").value;
+            const response = await fetch("/decrypt", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({ message, type: encryptionType, key }),
+            });
+            const data = await response.json();
+            document.getElementById("resultText").innerText = data.plain_text || data.error;
+        }
+    </script>
+</body>
+</html>
